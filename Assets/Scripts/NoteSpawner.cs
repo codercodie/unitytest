@@ -1,3 +1,5 @@
+using System.Collections;
+using TMPro;
 using UnityEngine;
 
 public class NoteSpawner : MonoBehaviour
@@ -9,34 +11,60 @@ public class NoteSpawner : MonoBehaviour
 
     private float timeElapsed = 0f;
     private float spawnTime = 0f;
+    private float introDelay;      // Time delay for 8 beats
 
     public AudioManager audioManager;
+
+    public TextMeshProUGUI countdown;
 
     void Start()
     {
         audioManager = GameObject.Find("AudioManager").GetComponent<AudioManager>();
         bpm = audioManager.GetBPMForSong(0);
         secondsPerBeat = 60f / bpm;  // Calculate time per beat
-        spawnTime = secondsPerBeat;  // The first note will spawn at the first beat
+
+        introDelay = secondsPerBeat * 8;  // Delay for intro
         audioManager.PlaySong(0);
+        audioManager.PauseSong();
+        StartCoroutine(IntroCoroutine());
+
     }
 
     void Update()
     {
-        // Update the time elapsed since the song started
-        timeElapsed += Time.deltaTime;
-
-        // Check if it's time to spawn a note
-        if (timeElapsed >= spawnTime)
+        if (audioManager.isPlaying)
         {
-            SpawnNote();
-            spawnTime += secondsPerBeat;  // Set the time for the next note
+            // Update the time elapsed since the song started
+            timeElapsed += Time.deltaTime;
+
+            // Check if it's time to spawn a note
+            if (timeElapsed >= spawnTime)
+            {
+                SpawnNote();
+                spawnTime += secondsPerBeat;  // Schedule the next note spawn
+            }
         }
+    }
+
+    private IEnumerator IntroCoroutine()
+    {
+        spawnTime = introDelay + secondsPerBeat;
+        yield return new WaitForSeconds(1);
+        countdown.text = "3";
+        yield return new WaitForSeconds(1);
+        countdown.text = "2";
+        yield return new WaitForSeconds(1);
+        countdown.text = "1";
+        yield return new WaitForSeconds(1);
+        countdown.text = "";
+        audioManager.ResumeSong();
+
+        
     }
 
     void SpawnNote()
     {
-        // You can customize this by randomly choosing a path or using predefined patterns
+        // Randomly choose a path or use predefined patterns
         Transform spawnPath = paths[Random.Range(0, paths.Length)];
 
         // Look for a specific "NoteStartPoint" or use path position if no specific point exists
@@ -53,7 +81,7 @@ public class NoteSpawner : MonoBehaviour
         noteScript.SetPath(spawnPath);
 
         // Set the timing for when the note should reach the trigger
-        float timeForNoteToReach = secondsPerBeat;  // The note will reach the trigger on the next beat
+        float timeForNoteToReach = 1f;  // The note will reach the trigger on the next beat
         noteScript.SetSpeed(timeForNoteToReach);
     }
 }
