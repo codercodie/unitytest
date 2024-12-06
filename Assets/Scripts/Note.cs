@@ -8,21 +8,27 @@ public class Note : MonoBehaviour
     private bool isHit = false;
     private bool isMissed = false; // Prevent multiple "Missed note!" calls
 
-    private float step = 1f; // Speed of the note movement
-    private float timeToReach = 1f; // Time in seconds for the note to reach the trigger
+    private float step; // Speed of the note movement
+    private float timeToReach; // Time in seconds for the note to reach the trigger
 
     // Define the distance thresholds for different types of hits
     private float perfectHitThreshold = 20f;  // Perfect hit if distance
     private float closeHitThreshold = 40f;    // Close hit if distance
+    public ScoreManager scoreManager;
+
 
     void Start()
     {
+        scoreManager = GameObject.Find("ScoreManager").GetComponent<ScoreManager>();
+
         // Initialize the note's movement speed based on the time it should take to reach the trigger
         if (triggerPoint != null)
         {
             float distance = Vector3.Distance(transform.position, triggerPoint.position);
             step = distance / timeToReach;
         }
+
+       
     }
 
     public void SetSpeed(float time)
@@ -111,11 +117,13 @@ public class Note : MonoBehaviour
             if (distance <= perfectHitThreshold)
             {
                 img.color = Color.green; // Change to green for a perfect hit
+                scoreManager.ScoreIncrease("Perfect");
             }
             // Close hit
             else if (distance <= closeHitThreshold)
             {
                 img.color = Color.yellow; // Change to yellow for a close hit
+                scoreManager.ScoreIncrease("Close");
             }
         }
         else

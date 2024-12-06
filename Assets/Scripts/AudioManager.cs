@@ -5,7 +5,7 @@ public class AudioManager : MonoBehaviour
     public AudioSource audioSource;  // The AudioSource that will play the song
     public AudioClip[] songClips;   // Array of available songs
     public float bpm;               // BPM of the currently playing song
-
+    public AudioClip currentSong;
     public bool isPlaying = false; // Track if a song is playing
 
     private void Start()
@@ -13,6 +13,14 @@ public class AudioManager : MonoBehaviour
         if (audioSource == null)
         {
             audioSource = GetComponent<AudioSource>(); // Get the AudioSource if not assigned
+        }
+    }
+
+    private void Update()
+    {
+        if (GetSongTime() == currentSong.length)
+        {
+            StopSong();
         }
     }
 
@@ -24,8 +32,9 @@ public class AudioManager : MonoBehaviour
             audioSource.clip = songClips[songIndex];
             audioSource.Play();
             isPlaying = true;
+            currentSong = audioSource.clip;
 
-            // Set BPM (you would either hardcode or get this from the song data)
+            // Set BPM
             bpm = GetBPMForSong(songIndex);
 
             Debug.Log($"Now playing: {songClips[songIndex].name}, BPM: {bpm}");
